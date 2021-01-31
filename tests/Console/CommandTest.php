@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Povils\PHPMND\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * Class CommandTest
@@ -34,14 +35,16 @@ class CommandTest extends TestCase
 
     public function testExecuteWithHintOption(): void
     {
-        $input = $this->createInput('assign', null, true, true);
-        $output = $this->createOutput();
-        $output
-            ->expects($this->at(9))
-            ->method('writeln')
-            ->with('Suggestions:');
+        $command = new CommandTester(new Command());
+        $command->execute([
+            'directories' => ['tests/files'],
+            '--extensions' => 'assign',
+            '--hint' => true,
+            '--non-zero-exit-on-violation' => true,
+        ]);
 
-        $this->execute([$input, $output]);
+        $output = $command->getDisplay();
+        $this->assertStringContainsString("\nSuggestions:\n", $output);
     }
 
     private function execute(array $args): int
